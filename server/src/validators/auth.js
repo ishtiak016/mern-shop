@@ -31,8 +31,12 @@ const validedUserRegistraTion=[
     .withMessage('phone length Must be 10'),
 
     body('image') 
-    .optional()
-    .isString()
+    .custom((value,{req})=>{
+        if(! req.file|| !req.file.buffer){
+            throw new Error("User Image is required")
+        }
+        return true;
+    })
     .withMessage('Image is required'),
 ];
 module.exports={validedUserRegistraTion}

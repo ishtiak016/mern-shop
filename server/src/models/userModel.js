@@ -30,8 +30,9 @@ const UserSchema = new Schema(
       set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10)),
     },
     image: {
-      type: String,
-      default: defaultImagePtah,
+      type: Buffer,
+      contentType: String,
+      require:  [true, "user image is mising"]
     },
     address: {
       type: String,
