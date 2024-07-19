@@ -7,41 +7,20 @@ const createJsonWebToken = require("../helper/jsonWebToken");
 const { jsonActivationKey, clientUrl } = require("../secrect");
 const { sendMailWithNodeMailer } = require("../helper/email");
 const jwt= require("jsonwebtoken");
-const { Context } = require("express-validator/lib/context");
+const {handleUserAction,findUsers} = require("../services/userServices");
+
 const getUsers = async (req, res, next) => {
   try {
     const search = req.query.search || "";
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
-
-    const searchRegExpresion = new RegExp(".*" + search + ".*", "i");
-    const filtre = {
-      isAdmin: { $ne: true },
-      $or: [
-        { name: { $regex: searchRegExpresion } },
-        { email: { $regex: searchRegExpresion } },
-        { phone: { $regex: searchRegExpresion } },
-      ],
-    };
-    const options = { password: 0 };
-    const users = await user
-      .find(filtre, options)
-      .limit(limit)
-      .skip((page - 1) * limit);
-    const count = await user.find(filtre).countDocuments();
-    if (!users) throw createError(404, "no user found");
-
+    const {users,pagination}= await findUsers(search,page,limit);
     return successResponse(res, {
       statusCode: 200,
       message: "User data return Successfully",
       payload: {
         users,
-        pagination: {
-          totalPages: Math.ceil(count / limit),
-          currentPage: page,
-          previousPage: page - 1 > 0 ? page - 1 : null,
-          nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null,
-        },
+        pagination,
       },
     });
   } catch (error) {
@@ -51,6 +30,7 @@ const getUsers = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
   try {
+   
     const id = req.params.id;
 
     const options = { password: 0 };
@@ -221,4 +201,23 @@ const updateUserById = async (req, res, next) => {
     next(error);
   }
 };
-module.exports = { getUsers, getUserById, deleteUserById, processRegister ,activateUserAccount,updateUserById};
+
+const handleManageUserById = async (req, res, next) => {
+  try {
+
+     const userId = req.params.id;
+     const action=req.body.action;
+     const successMessage= await handleUserAction(userId,action);
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: successMessage,
+      payload:{}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+module.exports = { getUsers, getUserById, deleteUserById, processRegister ,activateUserAccount,updateUserById,handleManageUserById};

@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const createError = require("http-errors");
 const bodyParser = require("body-parser");
@@ -7,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const userRouter = require("./routes/userRouter");
 const seedRouter = require("./routes/seedRouter");
 const { errorResponse } = require("./controllers/responseController");
+const authRouter = require("./routes/authRouter");
 const app = express();
 
 const limiter = rateLimit({
@@ -28,7 +30,9 @@ app.get("/test", (req, res) => {
     message: "Api test is Working fine",
   });
 });
+app.use(cookieParser());
 app.use("/api/users", userRouter);
+app.use("/api/auth",authRouter)
 app.use("/api/seed", seedRouter);
 
 //client error handle

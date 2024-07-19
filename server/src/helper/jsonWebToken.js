@@ -1,5 +1,3 @@
-
-
 const jwt = require('jsonwebtoken');
 
 const createJsonWebToken = (payload, secretKey, expiresIn) => {

@@ -39,4 +39,25 @@ const validedUserRegistraTion=[
     })
     .withMessage('Image is required'),
 ];
-module.exports={validedUserRegistraTion}
+
+
+const validedUserLogin=[
+
+
+    body('email') 
+    .trim()
+    .notEmpty()
+    .withMessage('Email IS required')
+    .isEmail()
+    .withMessage('Invalid Email'),
+
+    body('password') 
+    .trim()
+    .notEmpty()
+    .withMessage('password IS EMPTY')
+    .isLength({ min: 6 })
+    .withMessage('Password length Must be 6 or high')
+    .withMessage('Password must contain one uppercase letter, one lowercase letter, one number, and one special character'),
+
+];
+module.exports={validedUserRegistraTion,validedUserLogin}

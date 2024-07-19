@@ -4,9 +4,6 @@ const { errorResponse } = require("../controllers/responseController");
 const runValidation=async(req,res,next)=>{
     try {
         const errors=validationResult(req);
-        console.log("test_runvalidation");
-      
-
         if(!errors.isEmpty()){
             console.log(errors.array()[0].msg);
             return errorResponse(res,
