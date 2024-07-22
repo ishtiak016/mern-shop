@@ -4,10 +4,11 @@ const { successResponse } = require("./responseController");
 const { findWithId } = require("../services/findItem");
 const deleteImage = require("../helper/deleteImages");
 const createJsonWebToken = require("../helper/jsonWebToken");
-const { jsonActivationKey, clientUrl } = require("../secrect");
+const { jsonActivationKey, clientUrl, jsonResetPasswordKey } = require("../secrect");
 const { sendMailWithNodeMailer } = require("../helper/email");
 const jwt= require("jsonwebtoken");
-const {handleUserAction,findUsers} = require("../services/userServices");
+const bcrypt=require("bcryptjs");
+const {handleUserAction,findUsers, handlegetUserById, handleDeleteUserById, handlePasswordUpdate} = require("../services/userServices");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -34,12 +35,13 @@ const getUserById = async (req, res, next) => {
     const id = req.params.id;
 
     const options = { password: 0 };
-    const users = await findWithId(user, id, options);
+    const users = await handlegetUserById(id,options);
+    console.log(users.email);
     return successResponse(res, {
       statusCode: 200,
       message: "User data return Successfully",
       payload: {
-        users,
+        user :users,
       },
     });
   } catch (error) {
@@ -52,14 +54,10 @@ const deleteUserById = async (req, res, next) => {
     const id = req.params.id;
 
     const options = { password: 0 };
-    const users = await findWithId(user, id, options);
-
-    const userImagePath = users.image;
-    deleteImage(userImagePath);
-    await user.findByIdAndDelete({ _id: id, isAdmin: false });
+    const successMessage=await handleDeleteUserById(id,options);
     return successResponse(res, {
       statusCode: 200,
-      message: "User was deleted  Successfully",
+      message: successMessage,
     });
   } catch (error) {
     next(error);
@@ -98,6 +96,7 @@ const processRegister = async (req, res, next) => {
       jsonActivationKey,
       "10m"
     );
+    
  
     const emailData=
     {
@@ -123,7 +122,7 @@ const processRegister = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 200,
       message: "please go to your email for registration successfully odne ",
-      payload: { token,imageBufferString },
+      payload: { token },
     });
   } catch (error) {
   
@@ -159,7 +158,7 @@ const updateUserById = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const options = { password: 0 };
-    const users = await findWithId(user, userId, options);
+    await findWithId(user, userId, options);
     const updateOptions = { new :true, validators:true,Context:'query' };
     let updates={};
 
@@ -218,6 +217,98 @@ const handleManageUserById = async (req, res, next) => {
     next(error);
   }
 };
+const updateUserPassword = async (req, res, next) => {
+  
+  try {
+    const{email,oldPassword,newPassword,confirmPassword}=req.body;
 
+    const userId=req.params.id;
+    const options = {};
+   
+    const{successMessage,updatedUser}=await handlePasswordUpdate( userId,oldPassword,newPassword,options);
+    console.log(updatedUser);
+    return successResponse(res, {
+      statusCode: 200,
+      message: successMessage,
+      payload:{user:updatedUser}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
-module.exports = { getUsers, getUserById, deleteUserById, processRegister ,activateUserAccount,updateUserById,handleManageUserById};
+const handleForgotPassword = async (req, res, next) => {
+  
+  try {
+   const {email}=req.body;
+   const users= await user.findOne({email:email});
+   if(!users){
+    throw createError(404,"this email is not registerd to out website please register");
+   }
+   if (!jsonResetPasswordKey) {
+    throw createError(
+      500,
+      "Internal Server Error: jsonResetPasswordKey is not defined."
+    );
+  }
+
+  const token = createJsonWebToken(
+    {  email, },
+    jsonResetPasswordKey,
+    "10m"
+  );
+
+  const emailData=
+  {
+    email,
+    subject:'reset password',
+    html :`
+    
+    <p>please click here <a href="${clientUrl}/api/users/reset-password/${token}" target="_blank">reset your password</a></p>
+    `
+  }
+  try {
+    await sendMailWithNodeMailer(emailData);;
+  } catch (error) {
+    next(createError(500,"Failed to sending reset mail"));
+    return ;
+  }
+  
+//  const newUser = { name, email, password, phone, address };
+
+  return successResponse(res, {
+    statusCode: 200,
+    message: "please go to your email for password reset ",
+    payload: { token },
+  });
+} catch (error) {
+
+  next(error);
+}
+};
+const resetUserPassword = async (req, res, next) => {
+  
+  try {
+    const {password,token}=req.body;
+
+    const decode=await jwt.verify(token,jsonResetPasswordKey);
+    if(!decode){
+      throw createError(404,"token is invalid");
+    }
+    const filter={email:decode.email};
+    const updateUser=await user.findOneAndUpdate(filter,{password :password},{new :true}).select('-password');
+    if(!updateUser){
+      successMessage="password change was not  successfully";
+  }
+    return successResponse(res, {
+      statusCode: 200,
+      message: "password reset successfully",
+      payload:{updateUser}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+module.exports = { getUsers, getUserById, deleteUserById, processRegister ,activateUserAccount,updateUserById,handleManageUserById
+  ,updateUserPassword,handleForgotPassword,resetUserPassword
+};

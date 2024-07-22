@@ -60,4 +60,69 @@ const validedUserLogin=[
     .withMessage('Password must contain one uppercase letter, one lowercase letter, one number, and one special character'),
 
 ];
-module.exports={validedUserRegistraTion,validedUserLogin}
+
+const validedUserUpdatePassword=[
+
+
+    body('email') 
+    .trim()
+    .notEmpty()
+    .withMessage('Email IS required')
+    .isEmail()
+    .withMessage('Invalid Email'),
+
+    body('oldPassword') 
+    .trim()
+    .notEmpty()
+    .withMessage('password IS EMPTY')
+    .isLength({ min: 6 })
+    .withMessage('Password length Must be 6 or high')
+    .withMessage('Password must contain one uppercase letter, one lowercase letter, one number, and one special character'),
+   
+    body('newPassword') 
+    .trim()
+    .notEmpty()
+    .withMessage('password IS EMPTY')
+    .isLength({ min: 6 })
+    .withMessage('Password length Must be 6 or high')
+    .withMessage('Password must contain one uppercase letter, one lowercase letter, one number, and one special character'),
+
+
+    body('confirmPassword') 
+    .custom((value,{req})=>{
+    if(value!=req.body.newPassword){
+        throw new Error("Password didn't match ");
+    }
+    return true;
+    })
+];
+
+const validedUserForgotPassword=[
+     body('email') 
+    .trim()
+    .notEmpty()
+    .withMessage('Email IS required')
+    .isEmail()
+    .withMessage('Invalid Email'),
+
+];
+
+const validedUserresetPassword=[
+    body('token') 
+   .trim()
+   .notEmpty()
+   .withMessage('tokren IS required'),
+
+   body('password') 
+   .trim()
+   .notEmpty()
+   .withMessage('password IS EMPTY')
+   .isLength({ min: 6 })
+   .withMessage('Password length Must be 6 or high')
+   .withMessage('Password must contain one uppercase letter, one lowercase letter, one number, and one special character'),
+
+
+];
+
+module.exports={validedUserRegistraTion,validedUserLogin,validedUserUpdatePassword,validedUserForgotPassword,
+    validedUserresetPassword}

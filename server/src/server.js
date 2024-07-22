@@ -13,7 +13,7 @@ const startServer = async () => {
     } catch (error) {
         console.error("Failed to start server", error);
     }
-    let dhaka="dhaka";
+    
 };
-//ishtiak
+
 startServer();

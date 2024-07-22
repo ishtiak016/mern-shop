@@ -3,9 +3,10 @@ const data={
     users :[
         {
         name: "ishtiak ahmmed",
-        email :"ishtiak@gmail.com",
+        email :"ishtiak016@gmail.com",
         password:"123456",
         phone : "01714476086",
+        isAdmin : true,
         address:"dhaka Bangladesh"
     },
     {

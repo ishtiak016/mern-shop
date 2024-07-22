@@ -10,5 +10,9 @@ const jsonAccessKey=process.env.JWT_ACCESS_KEY;;
 const smtpUsername=process.env.SMTP_USERNAME;
 const smtpPassword=process.env.SMTP_PASSWORD;
 const clientUrl=process.env.CLIENT_URL;
+
+const jsonRefreshKey=process.env.JWT_REFRESH_KEY;
+const jsonResetPasswordKey=process.env.JWT_RESET_PASSWORD_KEY;;
+
 module.exports = { serverPort, mongoDbAtlasUrl,defaultImagePtah,jsonActivationKey ,smtpUsername,smtpPassword
-    ,clientUrl,jsonAccessKey};
+    ,clientUrl,jsonAccessKey,jsonResetPasswordKey,jsonRefreshKey};

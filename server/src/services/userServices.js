@@ -1,5 +1,9 @@
 const createError = require("http-errors");
 const user = require("../models/userModel");
+const { findWithId } = require("./findItem");
+const deleteImage = require("../helper/deleteImages");
+const mongoose=require("mongoose");
+const bcrypt=require("bcryptjs");
 const findUsers=async (search,page,limit)=>{
     try {
         const searchRegExpresion = new RegExp(".*" + search + ".*", "i");
@@ -28,6 +32,10 @@ const findUsers=async (search,page,limit)=>{
               },
         };
     } catch (error) {
+        if(error instanceof mongoose.Error){
+            throw createError(400,"Invalid item Id");
+            
+          }
         throw (error);
     }
 
@@ -52,7 +60,76 @@ const handleUserAction=async(userId,action,)=>{
         }
         return successMessage;
     } catch (error) {
+        if(error instanceof mongoose.Error){
+            throw createError(400,"Invalid item Id");
+            
+          }
         throw (error);
     }
 }
-module.exports={handleUserAction,findUsers};
+const handlegetUserById=async(id,oprion)=>{
+    try {
+        const options = { password: 0 };
+        const users = await findWithId(user, id, options);
+        if(!users){
+            throw createError(404,"user not found");
+        }
+        return users;
+    } catch (error) {
+        if(error instanceof mongoose.Error){
+            throw createError(400,"Invalid item Id");
+            
+          }
+       throw (error); 
+    }
+}
+const handleDeleteUserById=async(id,options)=>{
+    try {
+        const users = await findWithId(user, id, options);
+
+        const userImagePath = users.image;
+        deleteImage(userImagePath);
+        const deleteUser=await user.findByIdAndDelete({ _id: id, isAdmin: false });
+        let successMessage;
+        if(deleteUser){
+            successMessage ="delete Successfully";
+        }else{
+            successMessage ="delete is not  Successfully";
+        }
+        return successMessage;
+    } catch (error) {
+        if(error instanceof mongoose.Error){
+            throw createError(400,"Invalid item Id");
+            
+          }
+       throw (error); 
+    }
+}
+
+const handlePasswordUpdate=async(userId,oldPassword,newPassword,options)=>{
+    try {
+    const users =await findWithId(user, userId, options);
+
+    const isPasswordMatch=await bcrypt.compare(oldPassword,users.password);
+    if(!isPasswordMatch){
+            throw createError(400,"Email and password is not match");
+      }
+
+    const updates={$set:{password: newPassword}};
+    const updateOptions={new :true}
+    const updatedUser =await user.findByIdAndUpdate(userId,updates,updateOptions).select("-password");
+    let successMessage;
+    if(!updatedUser){
+        successMessage="password change was not  successfully";
+    }
+    successMessage="password change  successfully";
+    return {successMessage,updatedUser};
+    } catch (error) {
+        if(error instanceof mongoose.Error){
+            throw createError(400,"Invalid item Id");
+            
+          }
+       throw (error); 
+    }
+}
+module.exports={handleUserAction,findUsers,handlegetUserById,handleDeleteUserById,handlePasswordUpdate};
