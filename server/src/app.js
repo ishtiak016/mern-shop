@@ -9,6 +9,7 @@ const userRouter = require("./routes/userRouter");
 const seedRouter = require("./routes/seedRouter");
 const { errorResponse } = require("./controllers/responseController");
 const authRouter = require("./routes/authRouter");
+const categoryRouter = require("./routes/categoryRouter");
 const app = express();
 
 const limiter = rateLimit({
@@ -34,7 +35,7 @@ app.use(cookieParser());
 app.use("/api/users", userRouter);
 app.use("/api/auth",authRouter)
 app.use("/api/seed", seedRouter);
-
+app.use("/api/category", categoryRouter);
 //client error handle
 app.use((req, res, next) => {
   next(createError(404, "Route not found"));

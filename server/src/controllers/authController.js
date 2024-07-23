@@ -29,10 +29,10 @@ const handleLogin=async(req,res,next)=>{
         const accessToken = createJsonWebToken(
              {userPlain},
             jsonAccessKey,
-            "1m"
+            "10m"
           );
           res.cookie("accessToken",accessToken,{
-            maxAge : 1*60*1000,
+            maxAge : 10*60*1000,
             httpOnly :true,
             secure : true,
             sameSite :'none',
@@ -66,6 +66,7 @@ const handleLogin=async(req,res,next)=>{
 const handleLogout=async(req,res,next)=>{
     try {
        res.clearCookie("accessToken");
+       res.clearCookie("refreshToken");
         return successResponse(res, {
             statusCode: 200,
             message: "User logout Successfully",
@@ -91,11 +92,11 @@ const handleRefreshToken=async(req,res,next)=>{
         const accessToken = createJsonWebToken(
            decodeToken.userPlain,
            jsonAccessKey,
-           "1m"
+           "10m"
          );
    
          res.cookie("accessToken",accessToken,{
-           maxAge : 1*60*1000,
+           maxAge : 10*60*1000,
            httpOnly :true,
            secure : true,
            sameSite :'none',

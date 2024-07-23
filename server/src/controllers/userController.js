@@ -121,7 +121,7 @@ const processRegister = async (req, res, next) => {
     }
     return successResponse(res, {
       statusCode: 200,
-      message: "please go to your email for registration successfully odne ",
+      message: "please go to your email for registration successfully done ",
       payload: { token },
     });
   } catch (error) {
@@ -161,7 +161,6 @@ const updateUserById = async (req, res, next) => {
     await findWithId(user, userId, options);
     const updateOptions = { new :true, validators:true,Context:'query' };
     let updates={};
-
 
     const image=req.file;
     if(image){

@@ -123,6 +123,12 @@ const validedUserresetPassword=[
 
 
 ];
+const validedCategory=[
+    body('name') 
+   .trim()
+   .notEmpty()
+   .withMessage('Email IS required'),
 
+];
 module.exports={validedUserRegistraTion,validedUserLogin,validedUserUpdatePassword,validedUserForgotPassword,
-    validedUserresetPassword}
+    validedUserresetPassword,validedCategory}
